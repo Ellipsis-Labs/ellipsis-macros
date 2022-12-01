@@ -119,6 +119,10 @@ fn generate_static_bump_code(
     tokens.extend(quote! {
         /// The bump seed of the static PDA
         pub const BUMP: u8 = #bump;
+
+        pub fn bump() -> u8 {
+            BUMP
+        }
     });
 }
 
