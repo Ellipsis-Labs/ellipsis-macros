@@ -1,0 +1,32 @@
+[package]
+name = "ellipsis-macros"
+version = "0.1.0"
+edition = "2021"
+description = "Ellipsis Solana Macros"
+license = "Apache-2.0"
+
+
+[lib]
+proc-macro = true
+
+[dependencies.solana-program]
+version = "1.14.5"
+
+[dependencies.bs58]
+version = "0.4.0"
+
+[dependencies.proc-macro2]
+version = "1.0.19"
+
+[dependencies.quote]
+version = "1.0"
+
+[dependencies.rustversion]
+version = "1.0.7"
+
+[dependencies.syn]
+version = "1.0"
+features = [
+    "full",
+    "extra-traits",
+]
