@@ -6,6 +6,7 @@ This functions exactly like the `declare_id!` macro in the `solana_program` pack
 
 ```rust
 use ellipsis_macros::declare_id;
+use solana_sdk::pubkey::Pubkey;
 declare_id!("9BoN4yBYwH63LFM9fDamaHK62YjM56hWYZqok7MnAakJ");
 ```
 
@@ -15,6 +16,7 @@ This macro takes in a base58-encoded PDA, a base-58 encoded program id, and a st
 
 ```rust
 use ellipsis_macros::declare_pda;
+use solana_sdk::pubkey::Pubkey;
 declare_id!(
   "F46iAvcTENE8BBpSaQnumRw868p9o37AFhFvBkfKqu1e",
   "9BoN4yBYwH63LFM9fDamaHK62YjM56hWYZqok7MnAakJ",
