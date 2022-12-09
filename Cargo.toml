@@ -1,6 +1,6 @@
 [package]
 name = "ellipsis-macros"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "Ellipsis Solana Macros"
 license = "Apache-2.0"
@@ -10,7 +10,7 @@ license = "Apache-2.0"
 proc-macro = true
 
 [dependencies.solana-program]
-version = "1.14.5"
+version = "*"
 
 [dependencies.bs58]
 version = "0.4.0"
