@@ -17,7 +17,7 @@ This macro takes in a base58-encoded PDA, a base-58 encoded program id, and a st
 ```rust
 use ellipsis_macros::declare_pda;
 use solana_sdk::pubkey::Pubkey;
-declare_id!(
+declare_pda!(
   "F46iAvcTENE8BBpSaQnumRw868p9o37AFhFvBkfKqu1e",
   "9BoN4yBYwH63LFM9fDamaHK62YjM56hWYZqok7MnAakJ",
   "hello"
