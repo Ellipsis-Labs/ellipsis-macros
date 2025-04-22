@@ -7,6 +7,7 @@
 //! and modified to support new features.
 //!
 
+use std::fs;
 use std::str::FromStr;
 
 extern crate proc_macro;
@@ -176,5 +177,97 @@ pub fn declare_id(input: TokenStream) -> TokenStream {
 #[proc_macro]
 pub fn declare_pda(input: TokenStream) -> TokenStream {
     let id = parse_macro_input!(input as ProgramPdaArgs);
+    TokenStream::from(quote! {#id})
+}
+
+struct IdFromFile(proc_macro2::TokenStream);
+
+impl Parse for IdFromFile {
+    fn parse(input: ParseStream) -> Result<Self> {
+        let file_path: LitStr = input.parse()?;
+
+        // Read file contents at compile time
+        let contents = fs::read_to_string(file_path.value())
+            .map_err(|_| syn::Error::new_spanned(&file_path, "failed to read file"))?;
+
+        // Trim whitespace and newlines
+        let contents = contents.trim();
+
+        // Create a new LitStr with the file contents
+        let id_literal = LitStr::new(contents, file_path.span());
+
+        // Parse the pubkey using existing functionality
+        parse_pubkey(&id_literal).map(Self)
+    }
+}
+
+impl ToTokens for IdFromFile {
+    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+        generate_static_pubkey_code(&self.0, tokens)
+    }
+}
+
+#[proc_macro]
+pub fn declare_id_from_file(input: TokenStream) -> TokenStream {
+    let id = parse_macro_input!(input as IdFromFile);
+    TokenStream::from(quote! {#id})
+}
+
+struct IdFromKeypairFile(proc_macro2::TokenStream);
+
+impl Parse for IdFromKeypairFile {
+    fn parse(input: ParseStream) -> Result<Self> {
+        let file_path: LitStr = input.parse()?;
+
+        // Read keypair file contents at compile time
+        let contents = fs::read_to_string(file_path.value())
+            .map_err(|_| syn::Error::new_spanned(&file_path, "failed to read keypair file"))?;
+
+        // Parse the array string into bytes
+        let contents = contents.trim_matches(|c| c == '[' || c == ']');
+        let bytes: Vec<u8> = contents
+            .split(',')
+            .map(str::trim)
+            .map(|s| s.parse::<u8>())
+            .collect::<std::result::Result<_, _>>()
+            .map_err(|_| syn::Error::new_spanned(&file_path, "failed to parse byte array"))?;
+
+        // Verify keypair array length
+        if bytes.len() != 64 {
+            return Err(syn::Error::new_spanned(
+                &file_path,
+                format!(
+                    "invalid keypair file length: expected 64 bytes, got {}",
+                    bytes.len()
+                ),
+            ));
+        }
+
+        // Extract public key (last 32 bytes)
+        let pubkey_bytes = &bytes[32..];
+        let pubkey_array = <[u8; 32]>::try_from(pubkey_bytes).map_err(|_| {
+            syn::Error::new_spanned(&file_path, "failed to extract public key bytes")
+        })?;
+
+        // Convert bytes to TokenStream
+        let bytes = pubkey_array
+            .iter()
+            .map(|b| LitByte::new(*b, Span::call_site()));
+
+        Ok(Self(quote! {
+            Pubkey::new_from_array([#(#bytes,)*])
+        }))
+    }
+}
+
+impl ToTokens for IdFromKeypairFile {
+    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+        generate_static_pubkey_code(&self.0, tokens)
+    }
+}
+
+#[proc_macro]
+pub fn declare_id_from_keypair_file(input: TokenStream) -> TokenStream {
+    let id = parse_macro_input!(input as IdFromKeypairFile);
     TokenStream::from(quote! {#id})
 }
